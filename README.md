@@ -1,16 +1,15 @@
 <div align="center">
 
-<img src="https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png" width="80" />
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/copilot-banner.svg">
+  <source media="(prefers-color-scheme: light)" srcset=".github/copilot-banner.svg">
+  <img alt="Copilot Extensions" src=".github/copilot-banner.svg" width="100%">
+</picture>
 
-# ✨ Copilot Extensions
+<br/>
 
-**A collection of canvas extensions for [GitHub Copilot](https://github.com/features/copilot)**
-
-[![GitHub Copilot](https://img.shields.io/badge/GitHub%20Copilot-Extensions-8957e5?style=for-the-badge&logo=githubcopilot&logoColor=white)](https://github.com/features/copilot)
+[![GitHub Copilot](https://img.shields.io/badge/GitHub%20Copilot-Extensions-8534F3?style=for-the-badge&logo=githubcopilot&logoColor=white)](https://github.com/features/copilot)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
-[![Extensions](https://img.shields.io/badge/Extensions-1-blue?style=for-the-badge&logo=puzzle-piece&logoColor=white)](extensions/)
-
----
 
 *Enhance your Copilot experience with rich, interactive canvas extensions*
 

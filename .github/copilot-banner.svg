@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#160048"/>
+      <stop offset="50%" stop-color="#26115F"/>
+      <stop offset="100%" stop-color="#43179E"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#B870FF"/>
+      <stop offset="50%" stop-color="#8534F3"/>
+      <stop offset="100%" stop-color="#F08A3A"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#C898FD"/>
+      <stop offset="100%" stop-color="#F4A876"/>
+    </linearGradient>
+    <filter id="blur1">
+      <feGaussianBlur stdDeviation="40"/>
+    </filter>
+    <filter id="blur2">
+      <feGaussianBlur stdDeviation="20"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="300" fill="url(#bg)" rx="16"/>
+
+  <!-- Ambient glow orbs -->
+  <circle cx="200" cy="150" r="180" fill="#8534F3" opacity="0.15" filter="url(#blur1)"/>
+  <circle cx="1000" cy="150" r="160" fill="#F08A3A" opacity="0.1" filter="url(#blur1)"/>
+  <circle cx="600" cy="80" r="120" fill="#B870FF" opacity="0.12" filter="url(#blur1)"/>
+
+  <!-- Subtle grid pattern -->
+  <g opacity="0.06" stroke="#C898FD" stroke-width="0.5">
+    <line x1="0" y1="60" x2="1200" y2="60"/>
+    <line x1="0" y1="120" x2="1200" y2="120"/>
+    <line x1="0" y1="180" x2="1200" y2="180"/>
+    <line x1="0" y1="240" x2="1200" y2="240"/>
+    <line x1="120" y1="0" x2="120" y2="300"/>
+    <line x1="240" y1="0" x2="240" y2="300"/>
+    <line x1="360" y1="0" x2="360" y2="300"/>
+    <line x1="480" y1="0" x2="480" y2="300"/>
+    <line x1="600" y1="0" x2="600" y2="300"/>
+    <line x1="720" y1="0" x2="720" y2="300"/>
+    <line x1="840" y1="0" x2="840" y2="300"/>
+    <line x1="960" y1="0" x2="960" y2="300"/>
+    <line x1="1080" y1="0" x2="1080" y2="300"/>
+  </g>
+
+  <!-- Copilot icon (stylized) -->
+  <g transform="translate(480, 70)">
+    <!-- Visor/helmet shape -->
+    <path d="M120 0C80 0 45 15 25 40C5 65 0 95 0 120C0 145 10 160 30 160L210 160C230 160 240 145 240 120C240 95 235 65 215 40C195 15 160 0 120 0Z" fill="url(#glow)" opacity="0.9"/>
+    <!-- Eyes -->
+    <ellipse cx="85" cy="95" rx="22" ry="28" fill="#160048" opacity="0.85"/>
+    <ellipse cx="155" cy="95" rx="22" ry="28" fill="#160048" opacity="0.85"/>
+    <!-- Eye highlights -->
+    <ellipse cx="80" cy="88" rx="8" ry="10" fill="#C898FD" opacity="0.6"/>
+    <ellipse cx="150" cy="88" rx="8" ry="10" fill="#C898FD" opacity="0.6"/>
+  </g>
+
+  <!-- Title text -->
+  <text x="600" y="265" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="32" font-weight="700" fill="url(#accent)">Copilot Extensions</text>
+
+  <!-- Sparkle accents -->
+  <g fill="#C898FD" opacity="0.7">
+    <polygon points="150,50 153,56 160,56 155,60 157,67 150,63 143,67 145,60 140,56 147,56"/>
+    <polygon points="1050,80 1052,84 1057,84 1053,87 1055,92 1050,89 1045,92 1047,87 1043,84 1048,84"/>
+    <polygon points="350,240 352,244 357,244 353,247 355,252 350,249 345,252 347,247 343,244 348,244"/>
+    <polygon points="900,40 902,44 907,44 903,47 905,52 900,49 895,52 897,47 893,44 898,44"/>
+  </g>
+
+  <!-- Decorative particles -->
+  <circle cx="100" cy="100" r="2" fill="#F4A876" opacity="0.6"/>
+  <circle cx="1100" cy="200" r="2.5" fill="#B870FF" opacity="0.5"/>
+  <circle cx="300" cy="40" r="1.5" fill="#C898FD" opacity="0.7"/>
+  <circle cx="950" cy="260" r="2" fill="#F08A3A" opacity="0.5"/>
+  <circle cx="700" cy="30" r="1.5" fill="#C898FD" opacity="0.6"/>
+</svg>
