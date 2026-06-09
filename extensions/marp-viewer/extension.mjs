@@ -5,7 +5,11 @@
 import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { resolve as resolvePath, dirname, extname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { joinSession, createCanvas } from "@github/copilot-sdk/extension";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const SAMPLE_DECK_PATH = join(__dirname, "sample-deck.md");
 
 const { Marp } = await import("@marp-team/marp-core");
 
@@ -247,6 +251,12 @@ const session = await joinSession({
                     const filePath = resolvePath(ctx.input.filePath);
                     markdown = await readFile(filePath, "utf-8");
                     baseDir = dirname(filePath);
+                }
+
+                // Load sample deck if no content was provided
+                if (!markdown) {
+                    markdown = await readFile(SAMPLE_DECK_PATH, "utf-8");
+                    baseDir = __dirname;
                 }
 
                 let entry = servers.get(ctx.instanceId);
