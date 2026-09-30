@@ -20,6 +20,7 @@
 | Extension | Description |
 | --- | --- |
 | [marp-viewer](extensions/marp-viewer) | Renders [Marp](https://github.com/marp-team/marp/) markdown presentations as navigable slide decks using `@marp-team/marp-core` |
+| [markdown-redline](extensions/markdown-redline) | Rendered inline markdown diff (redline) between git refs, files or text, with word-level changes, Mermaid diagrams, search, change navigation and light/dark themes |
 
 ## Installation
 
