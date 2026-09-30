@@ -1,0 +1,12 @@
+{
+  "name": "markdown-redline",
+  "version": "1.0.0",
+  "description": "Copilot canvas extension: rendered inline markdown diff (redline) with word-level changes, Mermaid diagrams, search and change navigation.",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "dependencies": {
+    "marked": "^16.4.2",
+    "mermaid": "^11.12.0"
+  }
+}
