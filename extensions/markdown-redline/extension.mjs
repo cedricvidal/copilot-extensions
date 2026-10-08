@@ -11,7 +11,7 @@ import { promisify } from "node:util";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { joinSession, createCanvas, CanvasError } from "@github/copilot-sdk/extension";
-import { redline } from "./lib/redline.mjs";
+import { redline, renderDoc } from "./lib/redline.mjs";
 import { page } from "./lib/page.mjs";
 
 const run = promisify(execFile);
@@ -44,6 +44,7 @@ const inputSchema = {
         baseLabel: { type: "string" },
         headLabel: { type: "string" },
         theme: { type: "string", enum: ["auto", "light", "dark"], description: "Color theme. \"auto\" (default) follows the OS/app appearance; the header toggle can override it." },
+        view: { type: "string", enum: ["diff", "base", "head"], description: "Initial view: \"diff\" (redline, default), \"base\" (original version) or \"head\" (latest version). The header toggle can switch it." },
         files: { type: "array", items: fileSpec, description: "Multiple files rendered in one canvas. Each item overrides top-level baseRef/headRef." },
         ...fileSpec.properties,
     },
@@ -98,11 +99,14 @@ async function build(inst) {
         headLabel ??= head.label;
         const { html, stats } = redline(base.text, head.text);
         const note = base.missing && head.missing ? "not found on either side" : base.missing ? "new file" : head.missing ? "deleted file" : "";
-        files.push({ path: spec.path || spec.headFile || spec.baseFile || "document.md", html, stats, note });
+        files.push({
+            path: spec.path || spec.headFile || spec.baseFile || "document.md", html, stats, note,
+            baseHtml: renderDoc(base.text), headHtml: renderDoc(head.text), baseMissing: !!base.missing, headMissing: !!head.missing,
+        });
     }
     const title = input.title || (files.length === 1 ? path.basename(files[0].path) : `${files.length} markdown files`);
     inst.last = { title, baseLabel, headLabel, files: files.map(({ path: p, stats, note }) => ({ path: p, stats, note })) };
-    return page({ title, baseLabel, headLabel, files, theme: input.theme });
+    return page({ title, baseLabel, headLabel, files, theme: input.theme, view: inst.view ?? input.view });
 }
 
 function broadcast(inst, event, data = {}) {
@@ -168,12 +172,18 @@ await joinSession({
                     name: "set_diff",
                     description: "Replace what the canvas compares (same shape as the open input) and reload.",
                     inputSchema,
-                    handler: async (ctx) => { const inst = need(ctx); inst.input = ctx.input || {}; await build(inst); broadcast(inst, "reload"); return inst.last; },
+                    handler: async (ctx) => { const inst = need(ctx); inst.input = ctx.input || {}; inst.view = undefined; await build(inst); broadcast(inst, "reload"); return inst.last; },
                 },
                 {
                     name: "get_summary",
                     description: "Return labels and per-file added/removed/edited block counts.",
                     handler: async (ctx) => { const inst = need(ctx); await build(inst); return inst.last; },
+                },
+                {
+                    name: "set_view",
+                    description: "Switch between the redline diff, the original (base) version and the latest (head) version.",
+                    inputSchema: { type: "object", properties: { view: { type: "string", enum: ["diff", "base", "head"] } }, required: ["view"] },
+                    handler: async (ctx) => { const inst = need(ctx); inst.view = ctx.input.view; return { view: inst.view, delivered: broadcast(inst, "view", { view: inst.view }) }; },
                 },
                 {
                     name: "search",
@@ -196,6 +206,7 @@ await joinSession({
                     await startServer(inst);
                 }
                 inst.input = ctx.input || {};
+                inst.view = undefined;
                 inst.cwd = ctx.session?.workingDirectory;
                 try { await build(inst); } catch { /* surfaced in the page */ }
                 broadcast(inst, "reload");

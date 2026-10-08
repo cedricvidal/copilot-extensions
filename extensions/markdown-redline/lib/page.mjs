@@ -45,31 +45,47 @@ pre.mermaid{background:transparent;text-align:center}
 .cap{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
 .img-ref{color:var(--muted);font-style:italic}
 mark.hit{background:var(--hit-bg);color:var(--hit-fg)}mark.hit.cur{background:var(--hit-cur);color:#1f2328;outline:2px solid var(--hit-cur)}
-body.only .blk:not([data-chg]){display:none}
+body.only .v-diff .blk:not([data-chg]){display:none}
 .err{color:var(--rm-bar);padding:1em}
 .empty{color:var(--muted);padding:1em}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:5px;overflow:hidden}
+.seg button{border:0;border-radius:0;padding:1px 9px}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed=true]{background:var(--fg);color:var(--bg)}
+body:not([data-view=diff]) .diffonly{display:none}
+body[data-view=diff] .v:not(.v-diff),body[data-view=base] .v:not(.v-base),body[data-view=head] .v:not(.v-head){display:none}
 `;
 
-export function page({ title, baseLabel, headLabel, files, error, theme }) {
+const VIEWS = ["diff", "base", "head"];
+
+export function page({ title, baseLabel, headLabel, files, error, theme, view }) {
     const th = theme === "light" || theme === "dark" ? ` data-theme="${theme}"` : "";
+    const v0 = VIEWS.includes(view) ? view : "diff";
     const tot = files.reduce((t, f) => ({ added: t.added + f.stats.added, removed: t.removed + f.stats.removed, changed: t.changed + f.stats.changed }), { added: 0, removed: 0, changed: 0 });
     const multi = files.length > 1;
+    const side = (html, missing, label) =>
+        missing ? `<div class="empty">This file doesn't exist in <code>${esc(label)}</code>.</div>` : html || `<div class="empty">No content.</div>`;
     const body = error
         ? `<div class="err">${esc(error)}</div>`
         : files.map((f, i) => `
 <section id="f${i}">
 ${multi ? `<div class="file-h">${esc(f.path)}<span class="st">+${f.stats.added} −${f.stats.removed} ~${f.stats.changed}${f.note ? ` · ${esc(f.note)}` : ""}</span></div>` : ""}
-${f.html || `<div class="empty">No content.</div>`}
+<div class="v v-diff">${f.html || `<div class="empty">No content.</div>`}</div>
+<div class="v v-base">${side(f.baseHtml, f.baseMissing, baseLabel)}</div>
+<div class="v v-head">${side(f.headHtml, f.headMissing, headLabel)}</div>
 </section>`).join("\n");
     return `<!doctype html><html${th}><head><meta charset="utf-8"><title>${esc(title)}</title><style>${CSS}</style></head>
-<body>
+<body data-view="${v0}" data-default-view="${v0}">
 <header>
   <span class="title">${esc(title)}</span>
+  <span class="seg" role="group" aria-label="View">
+    <button data-view="diff" title="Redline diff (d)">Diff</button><button data-view="base" title="Original: ${esc(baseLabel)} (o)">Original</button><button data-view="head" title="Latest: ${esc(headLabel)} (l)">Latest</button>
+  </span>
   <span><code>${esc(baseLabel)}</code> → <code>${esc(headLabel)}</code></span>
-  <span><span class="sw" style="background:var(--add-blk);border-color:var(--add-bar)"></span>added ${tot.added}</span>
-  <span><span class="sw" style="background:var(--rm-blk);border-color:var(--rm-bar)"></span>removed ${tot.removed}</span>
-  <span><span class="sw" style="border-color:var(--chg-bar)"></span>edited ${tot.changed}: <ins>new</ins> <del>old</del></span>
-  <label><input id="only" type="checkbox"> changes only</label>
+  <span class="diffonly"><span class="sw" style="background:var(--add-blk);border-color:var(--add-bar)"></span>added ${tot.added}</span>
+  <span class="diffonly"><span class="sw" style="background:var(--rm-blk);border-color:var(--rm-bar)"></span>removed ${tot.removed}</span>
+  <span class="diffonly"><span class="sw" style="border-color:var(--chg-bar)"></span>edited ${tot.changed}: <ins>new</ins> <del>old</del></span>
+  <label class="diffonly"><input id="only" type="checkbox"> changes only</label>
   <span>changes <button id="cp" title="Previous change (p)">↑</button><button id="cn" title="Next change (n)">↓</button> <span id="ccount"></span></span>
   <span class="grow"></span>
   <span><input id="q" type="search" placeholder="Search (⌘F)"> <button id="qp" title="Previous (⇧Enter)">↑</button><button id="qn" title="Next (Enter)">↓</button> <span id="qcount"></span></span>
