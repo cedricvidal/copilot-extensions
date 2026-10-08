@@ -209,4 +209,10 @@ export function redline(baseText, headText) {
     return { html: parts.join("\n"), stats };
 }
 
+// Plain rendering of one side (no change markers), block by block so Mermaid
+// fences render the same way as in the redline.
+export function renderDoc(text) {
+    return splitBlocks(text).map((x) => `<div class="blk">${render(x)}</div>`).join("\n");
+}
+
 export { esc };

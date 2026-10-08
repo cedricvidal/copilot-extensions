@@ -7,19 +7,26 @@
   const themeBtn = $("theme");
   const showTheme = () => { themeBtn.textContent = { light: "☀︎ light", dark: "☾ dark" }[root.dataset.theme] || "◐ auto"; };
 
+  // ---- view (diff / original / latest) ----
+  const body = document.body, VIEWS = ["diff", "base", "head"];
+  const srvView = body.dataset.defaultView;
+  const view = () => body.dataset.view;
+  const viewRoot = () => `.v-${view()}`;
+
   // ---- Mermaid (loaded from /vendor, falling back to CDN) ----
+  // Rendered lazily per view: Mermaid can't lay out diagrams inside display:none.
   const diagrams = [...document.querySelectorAll("pre.mermaid")].map((el) => [el, el.textContent]);
-  let tries = 0, rendered = false;
+  const done = new Set();
+  let tries = 0;
   const renderMermaid = () => {
-    if (!diagrams.length) return;
+    const todo = diagrams.filter(([el]) => el.closest(viewRoot()) && !done.has(el));
+    if (!todo.length) return;
     if (!window.mermaid) { if (tries++ < 100) setTimeout(renderMermaid, 100); return; }
-    for (const [el, src] of diagrams) { el.removeAttribute("data-processed"); el.textContent = src; }
+    for (const [el, src] of todo) { el.removeAttribute("data-processed"); el.textContent = src; done.add(el); }
     window.mermaid.initialize({ startOnLoad: false, securityLevel: "strict", theme: isDark() ? "dark" : "default" });
-    window.mermaid.run({ nodes: diagrams.map(([el]) => el) }).catch(() => {});
-    rendered = true;
+    window.mermaid.run({ nodes: todo.map(([el]) => el) }).catch(() => {});
   };
-  renderMermaid();
-  const themeChanged = () => { showTheme(); if (rendered) renderMermaid(); };
+  const themeChanged = () => { showTheme(); done.clear(); renderMermaid(); };
   themeBtn.onclick = () => {
     const next = { "": "light", light: "dark", dark: "" }[root.dataset.theme || ""];
     if (next) root.dataset.theme = next; else delete root.dataset.theme;
@@ -27,6 +34,19 @@
   };
   mq.addEventListener("change", () => { if (!root.dataset.theme) themeChanged(); });
   showTheme();
+
+  const setView = (v, remember = true) => {
+    if (!VIEWS.includes(v)) return;
+    const y = scrollY;
+    if (q && q.value.trim()) clear();
+    body.dataset.view = v;
+    document.querySelectorAll(".seg button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === v)));
+    if (remember) try { sessionStorage.setItem("mdr-view", JSON.stringify({ srv: srvView, view: v })); } catch {}
+    renderMermaid();
+    scrollTo(0, y);
+    if (q && q.value.trim()) run();
+  };
+  document.querySelectorAll(".seg button").forEach((b) => (b.onclick = () => setView(b.dataset.view)));
 
   // ---- changes-only toggle ----
   const only = $("only");
@@ -37,6 +57,7 @@
   let ci = -1;
   const goChange = (d) => {
     if (!changes.length) { $("ccount").textContent = "none"; return; }
+    if (view() !== "diff") setView("diff");
     if (ci >= 0) changes[ci].classList.remove("cur");
     ci = (ci + d + changes.length) % changes.length;
     changes[ci].classList.add("cur");
@@ -60,7 +81,7 @@
     const term = q.value.trim().toLowerCase();
     if (term.length < 2) { cnt.textContent = ""; return; }
     const walker = document.createTreeWalker(document.querySelector("main"), NodeFilter.SHOW_TEXT, {
-      acceptNode: (n) => (n.parentElement.closest("script,style,svg") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT),
+      acceptNode: (n) => (n.parentElement.closest("script,style,svg") || !n.parentElement.closest(viewRoot()) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT),
     });
     const nodes = [];
     while (walker.nextNode()) nodes.push(walker.currentNode);
@@ -111,12 +132,21 @@
     if (mod || e.target.matches("input,textarea")) return;
     if (k === "n" || k === "j") goChange(1);
     if (k === "p" || k === "k") goChange(-1);
+    if (k === "d") setView("diff");
+    if (k === "o") setView("base");
+    if (k === "l") setView("head");
   });
+
+  // ---- initial view: a user's toggle survives reloads unless the agent changed the default ----
+  let saved;
+  try { saved = JSON.parse(sessionStorage.getItem("mdr-view") || "null"); } catch {}
+  setView(saved && saved.srv === srvView ? saved.view : srvView, false);
 
   // ---- agent-driven commands (SSE) ----
   try {
     const es = new EventSource("/events");
     es.addEventListener("reload", () => location.reload());
+    es.addEventListener("view", (e) => setView(JSON.parse(e.data).view));
     es.addEventListener("search", (e) => setQuery(JSON.parse(e.data).query || ""));
     es.addEventListener("goto", (e) => {
       const { change } = JSON.parse(e.data);

@@ -6,6 +6,7 @@ A canvas that shows a **rendered** markdown diff (a "redline"), not a raw text d
 - Mermaid diagrams render. Changed diagrams are shown before/after side by side, with the source diff underneath.
 - In-page search (⌘F, Enter / ⇧Enter, Esc) and change navigation (`n`/`p` or `j`/`k`), plus a "changes only" filter.
 - Light and dark themes. Auto follows the OS/app appearance, and the header button cycles auto → light → dark.
+- A **Diff / Original / Latest** toggle (or the `d` / `o` / `l` keys) switches between the redline and a clean rendering of either side. Search runs inside the visible view.
 - Compares several files in one canvas. Each side can come from a git ref, a file, or raw text.
 
 ## Usage
@@ -38,6 +39,7 @@ Or have the agent call `open_canvas` with `canvasId: "markdown-redline"`:
 | `baseText` / `headText` | Use raw markdown for that side. |
 | `title`, `baseLabel`, `headLabel` | Header labels. |
 | `theme` | `auto` (default), `light` or `dark`. |
+| `view` | Initial view: `diff` (default), `base` (original) or `head` (latest). |
 
 Per-file fields override the top-level ones. A file that's missing on one side is shown as a new file or a deleted file.
 
@@ -48,6 +50,7 @@ Per-file fields override the top-level ones. A file that's missing on one side i
 | `refresh` | Re-read the sources and reload. |
 | `set_diff` | Replace the comparison. Takes the same shape as the open input. |
 | `get_summary` | Returns added/removed/edited block counts per file. |
+| `set_view` | `{ "view": "diff" \| "base" \| "head" }`: switch between the redline, the original version and the latest version. |
 | `search` | `{ "query": "…" }`: highlight matches and jump to the first one. |
 | `goto_change` | `{ "change": 3 }`: scroll to the Nth change. |
 
